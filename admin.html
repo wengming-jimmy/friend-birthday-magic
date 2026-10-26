@@ -34,11 +34,16 @@
   .card2 p{margin:6px 0;line-height:1.65}
   .tag{display:inline-block;background:#5b3fd4;color:#fff;border-radius:999px;padding:4px 10px;font-size:14px;margin:2px 4px 2px 0}
   .list-item{border-top:1px solid #e6dcff;padding:14px 0}
+  .row-item{display:flex;gap:12px;align-items:flex-start}
+  .row-main{flex:1;min-width:0;line-height:1.55}
+  .row-actions{flex:none;width:112px;display:flex;flex-direction:column;gap:6px}
+  .row-actions button{margin:0;padding:9px 6px;font-size:14px}
+  .count{font-weight:800;color:#3d2a8a}
   .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .actions button{margin:0;font-size:15px;padding:11px}
   .ok{color:#1a7a3a;font-weight:800}
   .warn{background:#fff3c4;color:#4a2200;border:2px solid #e6a700;border-radius:14px;padding:12px 14px;line-height:1.65;font-size:15px}
-  @media(max-width:520px){.row{grid-template-columns:1fr 1fr}.row .year{grid-column:1/-1}.checks{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
+  @media(max-width:520px){.row{grid-template-columns:1fr 1fr}.row .year{grid-column:1/-1}.checks{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.row-actions{width:96px}}
 </style>
 </head>
 <body>
@@ -64,7 +69,9 @@
 
     <section>
       <h2>🗄️ 資料庫名單（Google 試算表）</h2>
-      <p class="lead" id="dbNote">資料庫尚未接好時，這裡會顯示提示；接好後，朋友在公開頁填完就會自動出現在這裡，不用再匯入。</p>
+      <p class="lead">這才是朋友在公開頁填完的正式名單，試算表有幾筆、這裡就該有幾筆。解鎖後會自動載入一次，之後朋友新填的，請按下面重新載入。</p>
+      <p class="small" id="dbNote">正在準備載入…</p>
+      <p class="small count" id="dbCount"></p>
       <button class="gold" id="dbReloadBtn">🔄 從資料庫重新載入</button>
       <div id="dbList"></div>
       <button class="ghost" id="dbExportBtn">⬇️ 匯出資料庫名單 CSV</button>
@@ -97,8 +104,9 @@
     </section>
 
     <section>
-      <h2>📜 魔法名單</h2>
-      <p class="lead">照生日快到慢排。</p>
+      <h2>📜 本機名單（只在這支手機）</h2>
+      <p class="lead">這不是資料庫。上面那區才是試算表正式名單；這區只是在這支手機上你手動新增或匯入的資料，照生日快到慢排。</p>
+      <p class="small count" id="localCount"></p>
       <input id="q" type="text" placeholder="🔍 搜尋姓名、單位、社團…">
       <div id="list"></div>
       <button class="gold" id="exportCsv">⬇️ 匯出全部名單 CSV</button>
@@ -130,15 +138,17 @@ function cardHTML(p){const s=signOf(p.month,p.day),du=daysUntil(p.month,p.day);
   return `<div class="card2"><h3>🔮 ${esc(p.nickname||p.name)} ・ ${s} ・ 生日 ${p.month}月${p.day}日 ${du===0?"🎉 就是今天！":`・再 ${du} 天`}</h3>
   <p>${SIGNS[s]}</p><p>🤝 ${groupsOf(p).map(g=>`<span class="tag">${esc(g)}</span>`).join("")||"未填單位"}</p>${p.note?`<p>💬 ${esc(p.note)}</p>`:""}
   <div class="actions"><button class="gold" onclick="copyBirthday('${p.id}')">🎂 複製生日祝福</button><button class="danger" onclick="delOne('${p.id}')">刪除</button></div></div>`;}
-function render(){const q=($("q").value||"").trim();let list=load().slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
+function render(){const q=($("q").value||"").trim();let allLocal=load();let list=allLocal.slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
   if(q)list=list.filter(p=>(p.name+(p.nickname||"")+groupsOf(p).join(" ")).includes(q));
-  $("list").innerHTML=list.length?list.map(p=>`<div class="list-item"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span><div class="actions"><button class="ghost" onclick="showCard('${p.id}')">看魔法卡片</button><button class="danger" onclick="delOne('${p.id}')">刪除</button></div><div id="detail-${p.id}"></div></div>`).join(""):"<p>還沒有資料。請從上面新增，或匯入朋友傳來的資料。</p>";
-  const today=load().filter(p=>daysUntil(p.month,p.day)===0);
+  $("localCount").textContent=`本機名單共 ${allLocal.length} 筆${q?`，搜尋到 ${list.length} 筆`:""}。`;
+  $("list").innerHTML=list.length?list.map(p=>`<div class="list-item"><div class="row-item"><div class="row-main"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span></div><div class="row-actions"><button class="ghost" onclick="showCard('${p.id}')">看魔法卡片</button><button class="danger" onclick="delOne('${p.id}')">刪除</button></div></div><div id="detail-${p.id}"></div></div>`).join(""):"<p>還沒有資料。請從上面新增，或匯入朋友傳來的資料。</p>";
+  const todaySource=dbRows.length?dbRows:allLocal;
+  const today=todaySource.filter(p=>daysUntil(p.month,p.day)===0);
   $("today").innerHTML=today.length?today.map(p=>`<div class="card2"><h3>🎉 ${esc(p.name)}，生日快樂！</h3><p>志明哥，今天記得跟 ${esc(p.nickname||p.name)} 說生日快樂喔！</p>${cardHTML(p)}</div>`).join(""):"<p>今天沒有名單上的壽星。</p>";}
 window.showCard=id=>{let p=load().find(x=>x.id===id);if(p)$("detail-"+id).innerHTML=cardHTML(p);};
-window.delOne=id=>{if(confirm("確定要刪除這筆資料嗎？刪除後無法復原，建議先匯出備份。")){save(load().filter(x=>x.id!==id));render();}};
+window.delOne=id=>{if(String(id).startsWith("db-")){let p=dbRows.find(x=>x.id===id);if(p)window.dbDel(p.row);return;}if(confirm("確定要刪除這筆資料嗎？刪除後無法復原，建議先匯出備份。")){save(load().filter(x=>x.id!==id));render();}};
 function copyText(t){if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>alert("已複製！")).catch(()=>{let ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();alert("已複製！");});}
-window.copyBirthday=id=>{let p=load().find(x=>x.id===id);if(!p)return;copyText(`${p.nickname||p.name}，生日快樂！你是${signOf(p.month,p.day)}，${SIGNS[signOf(p.month,p.day)]}志明哥祝你新的一歲平安開心、好事都來！`);};
+window.copyBirthday=id=>{let p=String(id).startsWith("db-")?dbRows.find(x=>x.id===id):load().find(x=>x.id===id);if(!p)return;copyText(`${p.nickname||p.name}，生日快樂！你是${signOf(p.month,p.day)}，${SIGNS[signOf(p.month,p.day)]}志明哥祝你新的一歲平安開心、好事都來！`);};
 function download(blob,name){let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}
 $("f").addEventListener("submit",e=>{e.preventDefault();let m=Number(monthSel.value),d=Number(daySel.value);let maxd=new Date(2024,m,0).getDate();if(d>maxd){alert(m+"月沒有"+d+"日，請重選。");return;}
   let p={id:Date.now().toString(),name:$("name").value.trim(),nickname:$("nick").value.trim(),month:m,day:d,year:$("year").value?Number($("year").value):"",groups:[...document.querySelectorAll("#groups input:checked")].map(x=>x.value),other:$("other").value.trim(),note:$("note").value.trim(),createdAt:new Date().toISOString()};
@@ -155,17 +165,20 @@ $("textImportBtn").onclick=()=>{
   let p={id:Date.now().toString(),name:rawName,nickname:nick,month:Number(m[2]),day:Number(m[3]),year:ym?Number(ym[1]):"",groups:gs.filter(g=>GROUPS.includes(g)),other:gs.filter(g=>!GROUPS.includes(g)).join("、"),note:"",createdAt:new Date().toISOString()};
   let a=load();a.push(p);save(a);$("importMsg").textContent=`✅ 已匯入 ${p.name}（${p.month}月${p.day}日）。`;$("textBox").value="";render();};
 
-function dbRender(){ if(!dbRows.length){$("dbList").innerHTML="<p>資料庫目前還沒有資料。</p>";return;}
+let dbLastLoad="";
+function dbRender(){ $("dbCount").textContent=dbRows.length?`資料庫名單共 ${dbRows.length} 筆${dbLastLoad?` ・ 上次載入：${dbLastLoad}`:""}。`:"";
+  if(!dbRows.length){$("dbList").innerHTML="<p>資料庫目前還沒有資料。</p>";return;}
   let list=dbRows.slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
-  $("dbList").innerHTML=list.map(p=>`<div class="list-item"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span><div class="actions"><button class="ghost" onclick="dbCard(${p.row})">看魔法卡片</button><button class="danger" onclick="dbDel(${p.row})">從資料庫刪除</button></div><div id="dbdetail-${p.row}"></div></div>`).join("");}
+  $("dbList").innerHTML=list.map(p=>`<div class="list-item"><div class="row-item"><div class="row-main"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span></div><div class="row-actions"><button class="ghost" onclick="dbCard(${p.row})">看魔法卡片</button><button class="danger" onclick="dbDel(${p.row})">刪除</button></div></div><div id="dbdetail-${p.row}"></div></div>`).join("");}
 window.dbCard=row=>{let p=dbRows.find(x=>x.row===row);if(p)$("dbdetail-"+row).innerHTML=cardHTML(p);};
-window.dbDel=row=>{if(!confirm("確定要從資料庫刪除這筆嗎？"))return;fetch(DB_URL+"?action=delete&token="+encodeURIComponent(DB_TOKEN)+"&row="+row).then(()=>{dbRows=dbRows.filter(x=>x.row!==row);dbRender();}).catch(()=>alert("刪除失敗，請直接到試算表刪除該列。"));};
-$("dbReloadBtn").onclick=()=>{ if(!DB_URL){$("dbNote").textContent="資料庫尚未接好：請等 Ivy 部署完成後再按重新載入。";return;}
+window.dbDel=row=>{if(!confirm("確定要從資料庫刪除這筆嗎？"))return;fetch(DB_URL+"?action=delete&token="+encodeURIComponent(DB_TOKEN)+"&row="+row).then(()=>{dbRows=dbRows.filter(x=>x.row!==row);dbRender();render();}).catch(()=>alert("刪除失敗，請直接到試算表刪除該列。"));};
+function loadDb(){ if(!DB_URL){$("dbNote").textContent="資料庫尚未接好：請等 Ivy 部署完成後再按重新載入。";return;}
   $("dbNote").textContent="正在從資料庫載入…";
-  fetch(DB_URL+"?action=list&token="+encodeURIComponent(DB_TOKEN)).then(r=>r.json()).then(j=>{ if(!j.ok) throw 0; dbRows=j.rows.map(r=>({id:"db-"+r.row,row:r.row,name:r.name,nickname:r.nickname,month:Number(r.month),day:Number(r.day),year:r.year?Number(r.year):"",groups:r.groups,other:r.other,note:r.note,createdAt:r.createdAt})); $("dbNote").textContent="✅ 已從資料庫載入 "+dbRows.length+" 筆。"; dbRender(); }).catch(()=>{ $("dbNote").textContent="⚠️ 從資料庫載入失敗（可能是試算表尚未部署或網路問題），請直接打開試算表確認，裡面的資料就是後台資料。"; });};
+  fetch(DB_URL+"?action=list&token="+encodeURIComponent(DB_TOKEN)).then(r=>r.json()).then(j=>{ if(!j.ok) throw 0; dbRows=j.rows.map(r=>({id:"db-"+r.row,row:r.row,name:r.name,nickname:r.nickname,month:Number(r.month),day:Number(r.day),year:r.year?Number(r.year):"",groups:r.groups,other:r.other,note:r.note,createdAt:r.createdAt})); dbLastLoad=new Date().toLocaleString("zh-TW",{hour12:false}); $("dbNote").textContent="✅ 已從資料庫載入 "+dbRows.length+" 筆。"; dbRender(); render(); }).catch(()=>{ $("dbNote").textContent="⚠️ 從資料庫載入失敗（可能是試算表尚未部署或網路問題），請直接打開試算表確認，裡面的資料就是後台資料。"; });}
+$("dbReloadBtn").onclick=loadDb;
 $("dbExportBtn").onclick=()=>{ if(!dbRows.length){alert("請先按「從資料庫重新載入」。");return;} let rows=[["姓名","稱呼","生日月","生日日","出生年份","共同單位社團","其他","留言","填寫時間"]]; dbRows.forEach(p=>rows.push([p.name,p.nickname,p.month,p.day,p.year,groupsOf(p).join("；"),p.other,p.note,p.createdAt])); let csv="\ufeff"+rows.map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n"); download(new Blob([csv],{type:"text/csv;charset=utf-8"}),"zhiming-friends-birthday-db.csv");};
 // 後台密碼鎖
-function unlock(){sessionStorage.setItem("zhiming-admin-unlocked","1");$("lockSec").style.display="none";$("adminBody").style.display="block";render();}
+function unlock(){sessionStorage.setItem("zhiming-admin-unlocked","1");$("lockSec").style.display="none";$("adminBody").style.display="block";render();if(DB_URL)loadDb();}
 function showLock(){
   let pin=localStorage.getItem(PINKEY);
   if(!pin){$("lockBody").innerHTML=`<p class="lead">第一次開後台，請先設一個你記得住的後台密碼（之後開後台都要輸入）。</p>
