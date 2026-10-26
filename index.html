@@ -89,7 +89,10 @@
   不收密碼、不收身分證、不收銀行帳號、不叫你轉帳。<br>
   公開頁面沒有名單，別人的生日不會在這裡出現。
 </footer>
+<script src="config.js"></script>
 <script>
+const API_URL = (typeof BIRTHDAY_API !== 'undefined' && BIRTHDAY_API.url) ? BIRTHDAY_API.url : '';
+const API_TOKEN = (typeof BIRTHDAY_API !== 'undefined' && BIRTHDAY_API.token) ? BIRTHDAY_API.token : '';
 const GROUPS=["國際獅子會300A-2區","視障登山健行暨歌唱委員會","GST 八大志業嘉年華","台科大 EMBA","志明哥的科技百寶袋（粉絲專頁）","咖啡店朋友"];
 const $=id=>document.getElementById(id);
 const monthSel=$("month"), daySel=$("day");
@@ -131,7 +134,17 @@ function fallbackCopy(t){let ta=document.createElement("textarea");ta.value=t;do
 $("f").addEventListener("submit",e=>{e.preventDefault();
   let m=Number(monthSel.value),d=Number(daySel.value);let maxd=new Date(2024,m,0).getDate();if(d>maxd){alert(m+"月沒有"+d+"日，請重選。");return;}
   current={name:$("name").value.trim(),nickname:$("nick").value.trim(),month:m,day:d,year:$("year").value?Number($("year").value):"",groups:[...document.querySelectorAll("#groups input:checked")].map(x=>x.value),other:$("other").value.trim(),note:$("note").value.trim()};
-  $("myCard").style.display="block";$("myCard").innerHTML=`<p class="ok">✅ ${esc(current.name)}，謝謝你告訴志明哥！</p>`+cardHTML(current);
+  $("myCard").style.display="block";$("myCard").innerHTML=`<p class="ok" id="dbStatus">⏳ 正在送出給志明哥…</p><p class="ok">✅ ${esc(current.name)}，謝謝你告訴志明哥！</p>`+cardHTML(current);
+  if(API_URL){
+    fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({token:API_TOKEN},current))})
+      .then(r=>r.json()).then(j=>{
+        $("dbStatus").textContent = j.ok ? "✅ 已送出到志明哥的資料庫，後台看得到了！" : "⚠️ 送出失敗，請改按下面「複製給志明哥」傳給他。";
+      }).catch(()=>{
+        $("dbStatus").textContent = "⚠️ 網路送出失敗，請改按下面「複製給志明哥」傳給他，資料不會不見。";
+      });
+  } else {
+    $("dbStatus").textContent = "ℹ️ 資料庫尚未接好，請按下面「複製給志明哥」傳給他。";
+  }
   $("copyBtn").onclick=()=>{let p=current;let t=`嗨志明哥，我是${p.name}${p.nickname?`（${p.nickname}）`:""}，生日是${p.month}月${p.day}日${p.year?`（${p.year}年）`:""}，我們是在「${groupsOf(p).join("、")||"未填"}」認識的朋友，請記得跟我說生日快樂！這是志明哥做的生日小站填的資料。`;copyText(t);};
   $("clearBtn").onclick=()=>{current=null;$("myCard").style.display="none";$("myCard").innerHTML="";$("f").reset();};
   $("myCard").scrollIntoView({behavior:"smooth"});});

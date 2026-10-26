@@ -63,6 +63,14 @@
     </section>
 
     <section>
+      <h2>🗄️ 資料庫名單（Google 試算表）</h2>
+      <p class="lead" id="dbNote">資料庫尚未接好時，這裡會顯示提示；接好後，朋友在公開頁填完就會自動出現在這裡，不用再匯入。</p>
+      <button class="gold" id="dbReloadBtn">🔄 從資料庫重新載入</button>
+      <div id="dbList"></div>
+      <button class="ghost" id="dbExportBtn">⬇️ 匯出資料庫名單 CSV</button>
+    </section>
+
+    <section>
       <h2>➕ 志明哥手動新增朋友</h2>
       <p class="lead">朋友用 LINE 傳來的文字，也可以直接貼到下面「文字匯入」區，不用一筆一筆重打。</p>
       <form id="f">
@@ -99,7 +107,11 @@
     </section>
   </div>
 </main>
+<script src="config.js"></script>
 <script>
+const DB_URL = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.url) ? BIRTHDAY_API.url : "";
+const DB_TOKEN = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.token) ? BIRTHDAY_API.token : "";
+let dbRows=[];
 const GROUPS=["國際獅子會300A-2區","視障登山健行暨歌唱委員會","GST 八大志業嘉年華","台科大 EMBA","志明哥的科技百寶袋（粉絲專頁）","咖啡店朋友"];
 const KEY="zhiming-friend-birthdays-v1", PINKEY="zhiming-admin-pin-v1";
 const $=id=>document.getElementById(id);
@@ -142,6 +154,16 @@ $("textImportBtn").onclick=()=>{
   let ym=t.match(/生日是\d+月\d+日（(\d+)年）/);let gm=t.match(/「([^」]+)」/);let gs=gm?gm[1].split("、").map(s=>s.trim()).filter(Boolean):[];
   let p={id:Date.now().toString(),name:rawName,nickname:nick,month:Number(m[2]),day:Number(m[3]),year:ym?Number(ym[1]):"",groups:gs.filter(g=>GROUPS.includes(g)),other:gs.filter(g=>!GROUPS.includes(g)).join("、"),note:"",createdAt:new Date().toISOString()};
   let a=load();a.push(p);save(a);$("importMsg").textContent=`✅ 已匯入 ${p.name}（${p.month}月${p.day}日）。`;$("textBox").value="";render();};
+
+function dbRender(){ if(!dbRows.length){$("dbList").innerHTML="<p>資料庫目前還沒有資料。</p>";return;}
+  let list=dbRows.slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
+  $("dbList").innerHTML=list.map(p=>`<div class="list-item"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span><div class="actions"><button class="ghost" onclick="dbCard(${p.row})">看魔法卡片</button><button class="danger" onclick="dbDel(${p.row})">從資料庫刪除</button></div><div id="dbdetail-${p.row}"></div></div>`).join("");}
+window.dbCard=row=>{let p=dbRows.find(x=>x.row===row);if(p)$("dbdetail-"+row).innerHTML=cardHTML(p);};
+window.dbDel=row=>{if(!confirm("確定要從資料庫刪除這筆嗎？"))return;fetch(DB_URL+"?action=delete&token="+encodeURIComponent(DB_TOKEN)+"&row="+row).then(()=>{dbRows=dbRows.filter(x=>x.row!==row);dbRender();}).catch(()=>alert("刪除失敗，請直接到試算表刪除該列。"));};
+$("dbReloadBtn").onclick=()=>{ if(!DB_URL){$("dbNote").textContent="資料庫尚未接好：請等 Ivy 部署完成後再按重新載入。";return;}
+  $("dbNote").textContent="正在從資料庫載入…";
+  fetch(DB_URL+"?action=list&token="+encodeURIComponent(DB_TOKEN)).then(r=>r.json()).then(j=>{ if(!j.ok) throw 0; dbRows=j.rows.map(r=>({id:"db-"+r.row,row:r.row,name:r.name,nickname:r.nickname,month:Number(r.month),day:Number(r.day),year:r.year?Number(r.year):"",groups:r.groups,other:r.other,note:r.note,createdAt:r.createdAt})); $("dbNote").textContent="✅ 已從資料庫載入 "+dbRows.length+" 筆。"; dbRender(); }).catch(()=>{ $("dbNote").textContent="⚠️ 從資料庫載入失敗（可能是試算表尚未部署或網路問題），請直接打開試算表確認，裡面的資料就是後台資料。"; });};
+$("dbExportBtn").onclick=()=>{ if(!dbRows.length){alert("請先按「從資料庫重新載入」。");return;} let rows=[["姓名","稱呼","生日月","生日日","出生年份","共同單位社團","其他","留言","填寫時間"]]; dbRows.forEach(p=>rows.push([p.name,p.nickname,p.month,p.day,p.year,groupsOf(p).join("；"),p.other,p.note,p.createdAt])); let csv="\ufeff"+rows.map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n"); download(new Blob([csv],{type:"text/csv;charset=utf-8"}),"zhiming-friends-birthday-db.csv");};
 // 後台密碼鎖
 function unlock(){sessionStorage.setItem("zhiming-admin-unlocked","1");$("lockSec").style.display="none";$("adminBody").style.display="block";render();}
 function showLock(){
