@@ -71,6 +71,7 @@
       <h2>🗄️ 資料庫名單（Google 試算表）</h2>
       <p class="lead">這才是朋友在公開頁填完的正式名單，試算表有幾筆、這裡就該有幾筆。解鎖後會自動載入一次，之後朋友新填的，請按下面重新載入。</p>
       <p class="small" id="dbNote">正在準備載入…</p>
+      <p class="small">後台版本：2026-10-26 資料庫自動載入版（如果沒看到這行，就是 iPhone 還在顯示舊版，請關掉分頁重開）</p>
       <p class="small count" id="dbCount"></p>
       <button class="gold" id="dbReloadBtn">🔄 從資料庫重新載入</button>
       <div id="dbList"></div>
@@ -115,7 +116,7 @@
     </section>
   </div>
 </main>
-<script src="config.js"></script>
+<script src="config.js?v=20261026b"></script>
 <script>
 const DB_URL = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.url) ? BIRTHDAY_API.url : "";
 const DB_TOKEN = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.token) ? BIRTHDAY_API.token : "";
@@ -172,7 +173,7 @@ function dbRender(){ $("dbCount").textContent=dbRows.length?`資料庫名單共 
   $("dbList").innerHTML=list.map(p=>`<div class="list-item"><div class="row-item"><div class="row-main"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span></div><div class="row-actions"><button class="ghost" onclick="dbCard(${p.row})">看魔法卡片</button><button class="danger" onclick="dbDel(${p.row})">刪除</button></div></div><div id="dbdetail-${p.row}"></div></div>`).join("");}
 window.dbCard=row=>{let p=dbRows.find(x=>x.row===row);if(p)$("dbdetail-"+row).innerHTML=cardHTML(p);};
 window.dbDel=row=>{if(!confirm("確定要從資料庫刪除這筆嗎？"))return;fetch(DB_URL+"?action=delete&token="+encodeURIComponent(DB_TOKEN)+"&row="+row).then(()=>{dbRows=dbRows.filter(x=>x.row!==row);dbRender();render();}).catch(()=>alert("刪除失敗，請直接到試算表刪除該列。"));};
-function loadDb(){ if(!DB_URL){$("dbNote").textContent="資料庫尚未接好：請等 Ivy 部署完成後再按重新載入。";return;}
+function loadDb(){ if(!DB_URL){$("dbNote").textContent="設定檔是舊版（還沒載入資料庫網址）：請關掉這個分頁，重新打開後台一次。";return;}
   $("dbNote").textContent="正在從資料庫載入…";
   fetch(DB_URL+"?action=list&token="+encodeURIComponent(DB_TOKEN)).then(r=>r.json()).then(j=>{ if(!j.ok) throw 0; dbRows=j.rows.map(r=>({id:"db-"+r.row,row:r.row,name:r.name,nickname:r.nickname,month:Number(r.month),day:Number(r.day),year:r.year?Number(r.year):"",groups:r.groups,other:r.other,note:r.note,createdAt:r.createdAt})); dbLastLoad=new Date().toLocaleString("zh-TW",{hour12:false}); $("dbNote").textContent="✅ 已從資料庫載入 "+dbRows.length+" 筆。"; dbRender(); render(); }).catch(()=>{ $("dbNote").textContent="⚠️ 從資料庫載入失敗（可能是試算表尚未部署或網路問題），請直接打開試算表確認，裡面的資料就是後台資料。"; });}
 $("dbReloadBtn").onclick=loadDb;
