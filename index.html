@@ -6,13 +6,10 @@
 <title>志明哥做的｜朋友生日魔法小站</title>
 <meta name="description" content="這是志明哥做的朋友生日小站：只填姓名、生日和共同單位，讓志明哥記得跟你說生日快樂。">
 <style>
-  :root{--bg:#120e2a;--bg2:#241a4d;--gold:#f2c94c;--gold2:#ffe9a3;--ink:#fff8e7;--muted:#d9d2ff;--card:#ffffff;--cardink:#241a3d;--red:#ff5a5a}
+  :root{--gold:#f2c94c;--ink:#fff8e7;--muted:#d9d2ff;--card:#ffffff;--cardink:#241a3d;--red:#ff5a5a}
   *{box-sizing:border-box}
   body{margin:0;font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);
     background:radial-gradient(circle at 85% 8%,#ffd76a33 0 60px,transparent 61px),
-    radial-gradient(circle at 12% 22%,#ffffff22 0 2px,transparent 3px),
-    radial-gradient(circle at 70% 40%,#ffffff18 0 2px,transparent 3px),
-    radial-gradient(circle at 30% 65%,#ffffff14 0 2px,transparent 3px),
     linear-gradient(180deg,#1b1445,#120e2a 55%,#0b0820);}
   header{padding:28px 18px 18px;text-align:center}
   .badge{display:inline-block;background:var(--gold);color:#2a1c00;font-weight:900;padding:8px 16px;border-radius:999px;font-size:20px;letter-spacing:1px;box-shadow:0 4px 0 #b8860b}
@@ -41,17 +38,11 @@
   .card2 h3{margin:0 0 8px;font-size:20px}
   .card2 p{margin:6px 0;line-height:1.65}
   .tag{display:inline-block;background:#5b3fd4;color:#fff;border-radius:999px;padding:4px 10px;font-size:14px;margin:2px 4px 2px 0}
-  .list-item{border-top:1px solid #e6dcff;padding:14px 0}
-  .list-item:first-child{border-top:0}
   .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .actions button{margin:0;font-size:15px;padding:11px}
-  .danger{background:#fff0f0;color:#b00000}
   .ok{color:#1a7a3a;font-weight:800}
   footer{max-width:720px;margin:0 auto;padding:0 18px 40px;color:var(--muted);font-size:14px;line-height:1.7;text-align:center}
-  @media(max-width:520px){
-    h1{font-size:29px}.row{grid-template-columns:1fr 1fr}.row .year{grid-column:1/-1}
-    .checks{grid-template-columns:1fr}.actions{grid-template-columns:1fr}
-  }
+  @media(max-width:520px){h1{font-size:29px}.row{grid-template-columns:1fr 1fr}.row .year{grid-column:1/-1}.checks{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -65,11 +56,10 @@
   <b>絕對不會</b>跟你要密碼、身分證字號、銀行帳號、驗證碼，也不會叫你轉帳或點奇怪連結。<br>
   如果有人冒用志明哥的名義跟你要這些，就是詐騙，請不要給。</div>
 </header>
-
 <main>
-  <section id="formSec">
-    <h2>🪄 1. 朋友請填這裡</h2>
-    <p class="lead">填完按儲存，就會看到你的星座、個性和今天適合做的事。資料只會存在你現在這支手機／電腦裡，不會自動寄出。</p>
+  <section>
+    <h2>🪄 朋友請填這裡</h2>
+    <p class="lead">填完按儲存，就會看到你的星座、個性和今天適合做的事。這個公開頁面不會顯示任何人的名單，你填的資料也不會留在這裡給下一個人看；要讓志明哥收到，請按「複製給志明哥」傳給他。</p>
     <form id="f">
       <label for="name">姓名 ＊</label>
       <input id="name" type="text" placeholder="例如：陳小美" required>
@@ -88,172 +78,63 @@
       <input id="other" type="text" placeholder="例如：大學同學、公司同事、登山社">
       <label for="note">想跟志明哥說的一句話（可不填）</label>
       <textarea id="note" rows="2" placeholder="例如：我們是去年歌唱比賽認識的！"></textarea>
-      <button class="primary" type="submit">✨ 儲存，看看我的魔法卡片</button>
-      <p class="small">按儲存代表你願意讓志明哥記住你的生日和共同單位，只用來跟你說生日快樂、寫生日祝福，不會拿去做別的事。</p>
+      <button class="primary" type="submit">✨ 看看我的魔法卡片</button>
+      <p class="small">按送出代表你願意讓志明哥記住你的生日和共同單位，只用來跟你說生日快樂、寫生日祝福，不會拿去做別的事。</p>
     </form>
     <div id="myCard" style="display:none"></div>
   </section>
-
-  <section>
-    <h2>📜 2. 魔法名單（存在這支裝置上）</h2>
-    <p class="lead">照生日快到慢排。快到生日的人會排在最前面，志明哥一看就知道最近要祝福誰。</p>
-    <input id="q" type="text" placeholder="🔍 搜尋姓名、單位、社團…">
-    <div id="list"></div>
-    <button class="gold" id="exportCsv">⬇️ 匯出全部名單 CSV（給志明哥整理用）</button>
-    <button class="ghost" id="exportJson">⬇️ 匯出 JSON 備份</button>
-    <p class="small">提醒：朋友在自己的手機上填，資料不會自動跑到志明哥手機。請朋友按下面「複製給志明哥」，用 LINE 或 Facebook 傳給志明哥，志明哥再貼到「志明哥匯入」區，就能集中成一本名冊。</p>
-    <label for="importBox">志明哥匯入：貼上朋友傳來的 JSON</label>
-    <textarea id="importBox" rows="3" placeholder="貼上 JSON 後按匯入"></textarea>
-    <button class="ghost" id="importBtn">📥 匯入上面貼上的資料</button>
-    <p id="importMsg" class="ok"></p>
-  </section>
-
-  <section>
-    <h2>🎂 3. 今天的壽星</h2>
-    <p class="lead">如果今天剛好有人生日，志明哥，記得打電話或傳訊息說生日快樂喔！</p>
-    <div id="today"></div>
-  </section>
 </main>
-
 <footer>
   古代魔法小站・志明哥做的・只收姓名、生日、共同單位<br>
-  不收密碼、不收身分證、不收銀行帳號、不叫你轉帳。
+  不收密碼、不收身分證、不收銀行帳號、不叫你轉帳。<br>
+  公開頁面沒有名單，別人的生日不會在這裡出現。
 </footer>
-
 <script>
 const GROUPS=["國際獅子會300A-2區","視障登山健行暨歌唱委員會","GST 八大志業嘉年華","台科大 EMBA","志明哥的科技百寶袋（粉絲專頁）","咖啡店朋友"];
-const KEY="zhiming-friend-birthdays-v1";
 const $=id=>document.getElementById(id);
 const monthSel=$("month"), daySel=$("day");
 for(let m=1;m<=12;m++){let o=document.createElement("option");o.value=m;o.textContent=m+"月";monthSel.appendChild(o);}
 for(let d=1;d<=31;d++){let o=document.createElement("option");o.value=d;o.textContent=d+"日";daySel.appendChild(o);}
-$("groups").innerHTML=GROUPS.map((g,i)=>`<label><input type="checkbox" value="${g}"> ${g}</label>`).join("");
-
-const SIGNS={
- "摩羯座":"做事踏實、很有責任感，答應的事一定做到。",
- "水瓶座":"想法很有創意，喜歡交朋友，也很願意幫忙。",
- "雙魚座":"心很細、很貼心，常常先想到別人。",
- "牡羊座":"行動力滿滿，想到就做，是大家的開心果。",
- "金牛座":"穩重又可靠，對朋友很好，也很會享受生活。",
- "雙子座":"反應快、很會聊天，跟誰都能聊得很開心。",
- "巨蟹座":"很顧家、很念舊，朋友有事一定挺到底。",
- "獅子座":"大方又有自信，在人群裡總是閃閃發亮。",
- "處女座":"細心又認真，把事情交給你最放心。",
- "天秤座":"好相處、有品味，是大家都喜歡的朋友。",
- "天蠍座":"重情重義，對朋友真心到底。",
- "射手座":"樂觀開朗，喜歡自由，也喜歡把快樂分給別人。"
-};
-function signOf(m,d){
-  const md=m*100+d;
-  let name="摩羯座";
-  if(md>=120&&md<=218) name="水瓶座";
-  else if(md>=219&&md<=320) name="雙魚座";
-  else if(md>=321&&md<=419) name="牡羊座";
-  else if(md>=420&&md<=520) name="金牛座";
-  else if(md>=521&&md<=620) name="雙子座";
-  else if(md>=621&&md<=722) name="巨蟹座";
-  else if(md>=723&&md<=822) name="獅子座";
-  else if(md>=823&&md<=922) name="處女座";
-  else if(md>=923&&md<=1022) name="天秤座";
-  else if(md>=1023&&md<=1121) name="天蠍座";
-  else if(md>=1122&&md<=1221) name="射手座";
-  else name="摩羯座";
-  return [0,0,name,SIGNS[name]];
-}
-function zodiacOf(y){
-  if(!y) return "";
-  const a=["鼠","牛","虎","兔","龍","蛇","馬","羊","猴","雞","狗","豬"];
-  return a[((y-2020)%12+12)%12];
-}
-function lifeNum(m,d,y){
-  let s=String(m)+String(d)+String(y||"");
-  let n=s.split("").reduce((a,c)=>a+Number(c),0);
-  while(n>9) n=String(n).split("").reduce((a,c)=>a+Number(c),0);
-  return n;
-}
+$("groups").innerHTML=GROUPS.map(g=>`<label><input type="checkbox" value="${g}"> ${g}</label>`).join("");
+const SIGNS={"摩羯座":"做事踏實、很有責任感，答應的事一定做到。","水瓶座":"想法很有創意，喜歡交朋友，也很願意幫忙。","雙魚座":"心很細、很貼心，常常先想到別人。","牡羊座":"行動力滿滿，想到就做，是大家的開心果。","金牛座":"穩重又可靠，對朋友很好，也很會享受生活。","雙子座":"反應快、很會聊天，跟誰都能聊得很開心。","巨蟹座":"很顧家、很念舊，朋友有事一定挺到底。","獅子座":"大方又有自信，在人群裡總是閃閃發亮。","處女座":"細心又認真，把事情交給你最放心。","天秤座":"好相處、有品味，是大家都喜歡的朋友。","天蠍座":"重情重義，對朋友真心到底。","射手座":"樂觀開朗，喜歡自由，也喜歡把快樂分給別人。"};
+function signOf(m,d){const md=m*100+d;let name="摩羯座";
+  if(md>=120&&md<=218)name="水瓶座";else if(md>=219&&md<=320)name="雙魚座";else if(md>=321&&md<=419)name="牡羊座";else if(md>=420&&md<=520)name="金牛座";else if(md>=521&&md<=620)name="雙子座";else if(md>=621&&md<=722)name="巨蟹座";else if(md>=723&&md<=822)name="獅子座";else if(md>=823&&md<=922)name="處女座";else if(md>=923&&md<=1022)name="天秤座";else if(md>=1023&&md<=1121)name="天蠍座";else if(md>=1122&&md<=1221)name="射手座";
+  return [0,0,name,SIGNS[name]];}
+function zodiacOf(y){if(!y)return"";const a=["鼠","牛","虎","兔","龍","蛇","馬","羊","猴","雞","狗","豬"];return a[((y-2020)%12+12)%12];}
+function lifeNum(m,d,y){let s=String(m)+String(d)+String(y||"");let n=s.split("").reduce((a,c)=>a+Number(c),0);while(n>9)n=String(n).split("").reduce((a,c)=>a+Number(c),0);return n;}
 const NUMTEXT={1:"開創與領導：想到就帶頭做",2:"溫柔與合作：最會照顧人",3:"開心與創意：走到哪都熱鬧",4:"踏實與可靠：最讓人安心",5:"自由與變化：生活很有趣",6:"照顧與責任：朋友的靠山",7:"思考與直覺：看事情很透",8:"大方與力量：做事很有氣勢",9:"熱心與大愛：很願意付出"};
 function hashStr(s){let h=2166136261;for(let c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return h>>>0;}
-function pick(arr,seed){return arr[seed%arr.length];}
-function todayMagic(p){
-  const today=new Date(); const ds=today.toISOString().slice(0,10);
-  const seed=hashStr(p.name+p.month+"-"+p.day+"-"+ds);
+function pick(a,seed){return a[seed%a.length];}
+function todayMagic(p){const ds=new Date().toISOString().slice(0,10);const seed=hashStr(p.name+p.month+"-"+p.day+"-"+ds);
   const good=["出門散步曬太陽","打電話給一位老朋友","喝一杯喜歡的飲料","把一件小事好好完成","對身邊的人說一句謝謝","整理一下手機照片，留個美好回憶"];
-  const slow=["一次做太多事，慢慢來就好","熬夜追劇，早點休息更好"];
-  const colors=["魔法紫","陽光金","清新藍綠","溫暖橘","櫻花粉"];
+  const slow=["一次做太多事，慢慢來就好","熬夜追劇，早點休息更好"];const colors=["魔法紫","陽光金","清新藍綠","溫暖橘","櫻花粉"];
   const msgs=["志明哥說：你今天笑起來特別好看，記得多笑一下！","志明哥說：謝謝你一直都在，有你真好！","志明哥說：今天適合做一件讓自己開心的事！"];
-  return {good:[pick(good,seed),pick(good,seed>>3),pick(good,seed>>6)],slow:pick(slow,seed>>2),color:pick(colors,seed>>4),num:(seed%9)+1,msg:pick(msgs,seed>>5)};
-}
-function daysUntil(m,d){
-  const now=new Date(); let y=now.getFullYear();
-  let next=new Date(y,m-1,d); if(next<new Date(now.toDateString())) next=new Date(y+1,m-1,d);
-  return Math.round((next-new Date(now.toDateString()))/86400000);
-}
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
-function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
+  return {good:[pick(good,seed),pick(good,seed>>3),pick(good,seed>>6)],slow:pick(slow,seed>>2),color:pick(colors,seed>>4),num:(seed%9)+1,msg:pick(msgs,seed>>5)};}
+function daysUntil(m,d){const now=new Date();let y=now.getFullYear();let next=new Date(y,m-1,d);if(next<new Date(now.toDateString()))next=new Date(y+1,m-1,d);return Math.round((next-new Date(now.toDateString()))/86400000);}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function groupsOf(p){return [...(p.groups||[]), p.other?p.other:""].filter(Boolean)}
-function cardHTML(p,showCopy){
-  const s=signOf(p.month,p.day), z=zodiacOf(p.year), ln=lifeNum(p.month,p.day,p.year), mg=todayMagic(p);
-  const du=daysUntil(p.month,p.day);
-  const age=p.year?`今年滿 ${new Date().getFullYear()-p.year} 歲`:"";
+function groupsOf(p){return [...(p.groups||[]),p.other?p.other:""].filter(Boolean)}
+function cardHTML(p){const s=signOf(p.month,p.day),z=zodiacOf(p.year),ln=lifeNum(p.month,p.day,p.year),mg=todayMagic(p),du=daysUntil(p.month,p.day);
   return `<div class="card2"><h3>🔮 ${esc(p.nickname||p.name)} 的魔法卡片</h3>
-  <p>🎂 生日：${p.month}月${p.day}日 ${p.year?`（${p.year}年出生，${age}）`:""} ${du===0?"🎉 就是今天，生日快樂！":`・再 ${du} 天就是生日`}</p>
-  <p>⭐ 星座：${s[2]} ― ${s[3]}</p>
-  ${z?`<p>🐲 生肖：${z}</p>`:""}
+  <p>🎂 生日：${p.month}月${p.day}日 ${p.year?`（${p.year}年出生）`:""} ${du===0?"🎉 就是今天，生日快樂！":`・再 ${du} 天就是生日`}</p>
+  <p>⭐ 星座：${s[2]} ― ${s[3]}</p>${z?`<p>🐲 生肖：${z}</p>`:""}
   <p>🔢 生命靈數：${ln} ― ${NUMTEXT[ln]}</p>
   <p>🤝 和志明哥的共同單位／社團：${groupsOf(p).map(g=>`<span class="tag">${esc(g)}</span>`).join("")||"（未填）"}</p>
   ${p.note?`<p>💬 ${esc(p.note)}</p>`:""}
   <p>✨ 今天適合：${mg.good.join("、")}</p>
-  <p>🐢 先緩緩：${mg.slow}　・　🍀 幸運色：${mg.color}　・　幸運數字：${mg.num}</p>
+  <p>🐢 先緩緩：${mg.slow} ・ 🍀 幸運色：${mg.color} ・ 幸運數字：${mg.num}</p>
   <p><b>${mg.msg}</b></p>
-  ${showCopy?`<div class="actions"><button class="gold" onclick="copyToJimmy('${p.id}')">📋 複製給志明哥</button><button class="ghost" onclick="copyBirthday('${p.id}')">🎂 複製生日祝福</button></div>`:""}
-  </div>`;
-}
-function render(){
-  const q=($("q").value||"").trim();
-  let list=load().slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
-  if(q) list=list.filter(p=>(p.name+p.nickname+groupsOf(p).join(" ")).includes(q));
-  $("list").innerHTML=list.length?list.map(p=>`<div class="list-item"><b>${esc(p.name)}</b> ${p.nickname?`（${esc(p.nickname)}）`:""} ・ ${p.month}/${p.day} ${p.year?`・ ${p.year}年`:""} ・ 再 ${daysUntil(p.month,p.day)} 天生日<br><span class="small">${groupsOf(p).map(esc).join("、")||"未填單位"}</span><div class="actions"><button class="ghost" onclick="showCard('${p.id}')">看魔法卡片</button><button class="danger" onclick="delOne('${p.id}')">刪除</button></div><div id="detail-${p.id}"></div></div>`).join(""):"<p>還沒有資料。請朋友在上面填寫，或由志明哥匯入朋友傳來的資料。</p>";
-  const all=load(), today=all.filter(p=>daysUntil(p.month,p.day)===0);
-  $("today").innerHTML=today.length?today.map(p=>`<div class="card2"><h3>🎉 ${esc(p.name)}，生日快樂！</h3><p>志明哥，今天記得跟 ${esc(p.nickname||p.name)} 說生日快樂喔！</p>${cardHTML(p,true)}</div>`).join(""):"<p>今天沒有名單上的壽星。明天再來看，或先去上面填一位朋友吧！</p>";
-}
-window.showCard=id=>{let p=load().find(x=>x.id===id); if(p) $("detail-"+id).innerHTML=cardHTML(p,true);};
-window.delOne=id=>{if(confirm("確定要刪除這筆資料嗎？刪除後無法復原，建議先匯出備份。")){save(load().filter(x=>x.id!==id));render();}};
-window.copyToJimmy=id=>{let p=load().find(x=>x.id===id); if(!p)return;
-  let t=`嗨志明哥，我是${p.name}${p.nickname?`（${p.nickname}）`:""}，生日是${p.month}月${p.day}日${p.year?`（${p.year}年）`:""}，我們是在「${groupsOf(p).join("、")||"未填"}」認識的朋友，請記得跟我說生日快樂！這是志明哥做的生日小站填的資料。`;
-  copyText(t);};
-window.copyBirthday=id=>{let p=load().find(x=>x.id===id); if(!p)return;
-  let s=signOf(p.month,p.day), mg=todayMagic(p);
-  let t=`${p.nickname||p.name}，生日快樂！你是${s[2]}，${s[3]}今天適合${mg.good[0]}，志明哥祝你新的一歲平安開心、好事都來！`;
-  copyText(t);};
-function copyText(t){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert("已複製！直接貼到 LINE 或 Facebook 傳給志明哥就可以了。")).catch(()=>fallbackCopy(t)); else fallbackCopy(t);}
+  <div class="actions"><button class="gold" id="copyBtn">📋 複製給志明哥</button><button class="ghost" id="clearBtn">🧹 清除這頁的資料</button></div>
+  <p class="small">按「複製給志明哥」，再貼到 LINE 或 Facebook 傳給志明哥，他才會收到。關掉這頁，資料就不會留在公開頁面給別人看。</p></div>`;}
+let current=null;
+function copyText(t){if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>alert("已複製！直接貼到 LINE 或 Facebook 傳給志明哥就可以了。")).catch(()=>fallbackCopy(t));else fallbackCopy(t);}
 function fallbackCopy(t){let ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();alert("已複製！直接貼到 LINE 或 Facebook 傳給志明哥就可以了。");}
 $("f").addEventListener("submit",e=>{e.preventDefault();
-  let m=Number(monthSel.value), d=Number(daySel.value);
-  let maxd=new Date(2024,m,0).getDate(); if(d>maxd){alert(m+"月沒有"+d+"日，請重選。");return;}
-  let p={id:Date.now().toString(),name:$("name").value.trim(),nickname:$("nick").value.trim(),month:m,day:d,year:$("year").value?Number($("year").value):"",groups:[...document.querySelectorAll("#groups input:checked")].map(x=>x.value),other:$("other").value.trim(),note:$("note").value.trim(),createdAt:new Date().toISOString()};
-  let a=load(); a.push(p); save(a);
-  $("myCard").style.display="block"; $("myCard").innerHTML=`<p class="ok">✅ 已儲存！${esc(p.name)}，謝謝你告訴志明哥。</p>`+cardHTML(p,true);
-  $("myCard").scrollIntoView({behavior:"smooth"}); render();});
-$("q").addEventListener("input",render);
-$("exportCsv").onclick=()=>{
-  let a=load(); if(!a.length){alert("目前還沒有資料可以匯出。");return;}
-  let rows=[["姓名","稱呼","生日月","生日日","出生年份","共同單位社團","其他","留言","建立時間"]];
-  a.forEach(p=>rows.push([p.name,p.nickname,p.month,p.day,p.year,groupsOf(p).join("；"),p.other,p.note,p.createdAt]));
-  let csv="\ufeff"+rows.map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n");
-  download(new Blob([csv],{type:"text/csv;charset=utf-8"}),"zhiming-friends-birthday.csv");};
-$("exportJson").onclick=()=>{
-  let a=load(); if(!a.length){alert("目前還沒有資料可以匯出。");return;}
-  download(new Blob([JSON.stringify(a,null,2)],{type:"application/json"}),"zhiming-friends-birthday.json");};
-function download(blob,name){let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);}
-$("importBtn").onclick=()=>{
-  try{let a=JSON.parse($("importBox").value.trim()); if(!Array.isArray(a)) a=[a];
-    a=a.filter(x=>x&&x.name&&x.month&&x.day);
-    if(!a.length) throw 0;
-    let cur=load(); a.forEach(p=>{if(!p.id)p.id=Date.now()+"-"+Math.random(); cur.push(p);}); save(cur);
-    $("importMsg").textContent=`✅ 已匯入 ${a.length} 筆。`; $("importBox").value=""; render();
-  }catch(e){$("importMsg").textContent="匯入失敗：請確認貼上的是從本站匯出的 JSON。";}};
-render();
+  let m=Number(monthSel.value),d=Number(daySel.value);let maxd=new Date(2024,m,0).getDate();if(d>maxd){alert(m+"月沒有"+d+"日，請重選。");return;}
+  current={name:$("name").value.trim(),nickname:$("nick").value.trim(),month:m,day:d,year:$("year").value?Number($("year").value):"",groups:[...document.querySelectorAll("#groups input:checked")].map(x=>x.value),other:$("other").value.trim(),note:$("note").value.trim()};
+  $("myCard").style.display="block";$("myCard").innerHTML=`<p class="ok">✅ ${esc(current.name)}，謝謝你告訴志明哥！</p>`+cardHTML(current);
+  $("copyBtn").onclick=()=>{let p=current;let t=`嗨志明哥，我是${p.name}${p.nickname?`（${p.nickname}）`:""}，生日是${p.month}月${p.day}日${p.year?`（${p.year}年）`:""}，我們是在「${groupsOf(p).join("、")||"未填"}」認識的朋友，請記得跟我說生日快樂！這是志明哥做的生日小站填的資料。`;copyText(t);};
+  $("clearBtn").onclick=()=>{current=null;$("myCard").style.display="none";$("myCard").innerHTML="";$("f").reset();};
+  $("myCard").scrollIntoView({behavior:"smooth"});});
 </script>
 </body>
 </html>
