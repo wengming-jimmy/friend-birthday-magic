@@ -116,12 +116,12 @@
     </section>
   </div>
 </main>
-<script src="config.js?v=20261026b"></script>
+<script src="config.js?v=20261027a"></script>
 <script>
 const DB_URL = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.url) ? BIRTHDAY_API.url : "";
 const DB_TOKEN = (typeof BIRTHDAY_API !== "undefined" && BIRTHDAY_API.token) ? BIRTHDAY_API.token : "";
 let dbRows=[];
-const GROUPS=["國際獅子會300A-2區","視障登山健行暨歌唱委員會","GST 八大志業嘉年華","台科大 EMBA","志明哥的科技百寶袋（粉絲專頁）","咖啡店朋友"];
+const GROUPS=["國際獅子會300A-2區","2122 年度會長同學","家長會長團隊","台科大 EMBA","志明哥的科技百寶袋（粉絲專頁）","咖啡店朋友"];
 const KEY="zhiming-friend-birthdays-v1", PINKEY="zhiming-admin-pin-v1";
 const $=id=>document.getElementById(id);
 const monthSel=$("month"), daySel=$("day");
@@ -132,11 +132,14 @@ function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
 function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
 function groupsOf(p){return [...(p.groups||[]),p.other?p.other:""].filter(Boolean)}
+function isGirlfriend(p){return groupsOf(p).some(g=>String(g).includes("女朋友")||String(g).includes("女友"));}
+function specialHTML(p){if(!isGirlfriend(p))return "";return `<div style="background:linear-gradient(135deg,#ffe3f1,#fff0f7);border:2px solid #ff7ab8;border-radius:14px;padding:14px;margin:6px 0 12px;text-align:center"><h3 style="margin:0 0 6px">💖 特別的人專屬畫面 💖</h3><p style="margin:6px 0">哇！你是志明哥的特別的人，你的魔法卡片升級成粉紅限定版了！</p><p style="margin:6px 0">✨ 今天適合：牽手散步、一起吃好吃的、對志明哥說一句好聽的話</p><p style="margin:6px 0"><b>志明哥說：有你在，什麼都變得特別好，謝謝你一直陪著我！</b></p></div>`;}
 function daysUntil(m,d){const now=new Date();let y=now.getFullYear();let next=new Date(y,m-1,d);if(next<new Date(now.toDateString()))next=new Date(y+1,m-1,d);return Math.round((next-new Date(now.toDateString()))/86400000);}
 const SIGNS={"摩羯座":"做事踏實、很有責任感，答應的事一定做到。","水瓶座":"想法很有創意，喜歡交朋友，也很願意幫忙。","雙魚座":"心很細、很貼心，常常先想到別人。","牡羊座":"行動力滿滿，想到就做，是大家的開心果。","金牛座":"穩重又可靠，對朋友很好，也很會享受生活。","雙子座":"反應快、很會聊天，跟誰都能聊得很開心。","巨蟹座":"很顧家、很念舊，朋友有事一定挺到底。","獅子座":"大方又有自信，在人群裡總是閃閃發亮。","處女座":"細心又認真，把事情交給你最放心。","天秤座":"好相處、有品味，是大家都喜歡的朋友。","天蠍座":"重情重義，對朋友真心到底。","射手座":"樂觀開朗，喜歡自由，也喜歡把快樂分給別人。"};
 function signOf(m,d){const md=m*100+d;let n="摩羯座";if(md>=120&&md<=218)n="水瓶座";else if(md>=219&&md<=320)n="雙魚座";else if(md>=321&&md<=419)n="牡羊座";else if(md>=420&&md<=520)n="金牛座";else if(md>=521&&md<=620)n="雙子座";else if(md>=621&&md<=722)n="巨蟹座";else if(md>=723&&md<=822)n="獅子座";else if(md>=823&&md<=922)n="處女座";else if(md>=923&&md<=1022)n="天秤座";else if(md>=1023&&md<=1121)n="天蠍座";else if(md>=1122&&md<=1221)n="射手座";return n;}
 function cardHTML(p){const s=signOf(p.month,p.day),du=daysUntil(p.month,p.day);
   return `<div class="card2"><h3>🔮 ${esc(p.nickname||p.name)} ・ ${s} ・ 生日 ${p.month}月${p.day}日 ${du===0?"🎉 就是今天！":`・再 ${du} 天`}</h3>
+  ${specialHTML(p)}
   <p>${SIGNS[s]}</p><p>🤝 ${groupsOf(p).map(g=>`<span class="tag">${esc(g)}</span>`).join("")||"未填單位"}</p>${p.note?`<p>💬 ${esc(p.note)}</p>`:""}
   <div class="actions"><button class="gold" onclick="copyBirthday('${p.id}')">🎂 複製生日祝福</button><button class="danger" onclick="delOne('${p.id}')">刪除</button></div></div>`;}
 function render(){const q=($("q").value||"").trim();let allLocal=load();let list=allLocal.slice().sort((a,b)=>daysUntil(a.month,a.day)-daysUntil(b.month,b.day));
